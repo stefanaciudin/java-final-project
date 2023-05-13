@@ -1,8 +1,11 @@
 package demo.service;
 
+import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.enums.ModelObjectType;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.*;
+import com.wrapper.spotify.requests.data.artists.GetArtistsRelatedArtistsRequest;
+import com.wrapper.spotify.requests.data.artists.GetArtistsTopTracksRequest;
 import com.wrapper.spotify.requests.data.follow.GetUsersFollowedArtistsRequest;
 import com.wrapper.spotify.requests.data.personalization.simplified.GetUsersTopArtistsRequest;
 import com.wrapper.spotify.requests.data.personalization.simplified.GetUsersTopTracksRequest;
@@ -12,11 +15,7 @@ import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileReq
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static demo.service.AuthService.setToken;
 import static demo.service.AuthService.spotifyApi;
@@ -53,11 +52,7 @@ public class SpotifyService {
 
     public Artist[] getUsersTopArtists(String code) throws IOException, SpotifyWebApiException {
         setToken(code);
-        GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyApi
-                .getUsersTopArtists()
-                .limit(50)
-                .time_range("long_term")
-                .build();
+        GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyApi.getUsersTopArtists().limit(50).time_range("long_term").build();
         try {
             final Paging<Artist> artists = getUsersTopArtistsRequest.execute();
             System.out.println("Total artists: " + artists.getTotal());
@@ -69,13 +64,28 @@ public class SpotifyService {
         return new Artist[0];
     }
 
+    public Artist[] getTopArtistsRelatedArtists(String code) throws IOException, SpotifyWebApiException {
+        // get related artists for the top 2 artists
+        Artist[] topArtists = getUsersTopArtists(code);
+        Artist[] relatedArtists = new Artist[0];
+        for (int i = 0; i < 2; i++) {
+            GetArtistsRelatedArtistsRequest getArtistsRelatedArtistsRequest = spotifyApi.getArtistsRelatedArtists(topArtists[i].getId()).build();
+            try {
+                final Artist[] artists = getArtistsRelatedArtistsRequest.execute();
+                //System.out.println("Total related artists: " + artists.length);
+                relatedArtists = Arrays.copyOf(relatedArtists, relatedArtists.length + artists.length);
+                System.arraycopy(artists, 0, relatedArtists, relatedArtists.length - artists.length, artists.length);
+            } catch (IOException | SpotifyWebApiException e) {
+                System.out.println("Error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        return relatedArtists;
+    }
+
     public Track[] getUsersTopTracks(String code) throws IOException, SpotifyWebApiException {
         setToken(code);
-        GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyApi
-                .getUsersTopTracks()
-                .time_range("long_term")
-                .limit(50)
-                .build();
+        GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyApi.getUsersTopTracks().time_range("long_term").limit(50).build();
         try {
             final Paging<Track> tracks = getUsersTopTracksRequest.execute();
             System.out.println("Total tracks: " + tracks.getTotal());
@@ -88,27 +98,46 @@ public class SpotifyService {
         return new Track[0];
     }
 
-    public Playlist createPlaylistWithTopTracks(String code) throws IOException, SpotifyWebApiException {
+    public Track[] getArtistsTopTracks(String artistId) {
         //setToken(code);
-        Track[] topTracks = getUsersTopTracks(code);
-        CreatePlaylistRequest createPlaylistRequest = spotifyApi.createPlaylist(getUserId(), "Playlist with top tracks long term").build();
-        Playlist playlist = null;
+        GetArtistsTopTracksRequest getArtistsTopTracksRequest = spotifyApi.getArtistsTopTracks(artistId, CountryCode.US).build();
         try {
-            playlist = createPlaylistRequest.execute();
-
-            System.out.println("Playlist name: " + playlist.getName());
+            final Track[] tracks = getArtistsTopTracksRequest.execute();
+            System.out.println("Total tracks: " + tracks.length);
+            return tracks;
         } catch (IOException | SpotifyWebApiException e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println(playlist.getId());
-
-        // add tracks to playlist
-        spotifyApi.addTracksToPlaylist(playlist.getId(), Arrays.stream(topTracks).map(Track::getUri).toArray(String[]::new)).build().execute();
-        return playlist;
+        return new Track[0];
     }
 
-    public List<String> getUsersTopGenres(String code) throws IOException, SpotifyWebApiException {
+    public Playlist createPlaylistWithTopTracks(String code) throws IOException, SpotifyWebApiException {
+        //setToken(code);
+        Track[] topTracks = getUsersTopTracks(code);
+        return createNewPlaylist(topTracks);
+    }
+
+    public Playlist createPlaylistFromRelatedArtists(String code) throws IOException, SpotifyWebApiException {
+        Artist[] relatedArtists = getTopArtistsRelatedArtists(code);
+        Track[] relatedTracks = new Track[0];
+        for (Artist artist : relatedArtists) {
+            Track track = getArtistsTopTracks(artist.getId())[0];
+            // create a new array with length one greater than relatedTracks
+            Track[] newTracks = new Track[relatedTracks.length + 1];
+            // copy all elements of relatedTracks into the new array
+            System.arraycopy(relatedTracks, 0, newTracks, 0, relatedTracks.length);
+            // add the new element to the end of the new array
+            newTracks[newTracks.length - 1] = track;
+            // update relatedTracks to point to the new array
+            relatedTracks = newTracks;
+        }
+        System.out.println("Length of related tracks " + relatedTracks.length);
+        return createNewPlaylist(relatedTracks);
+    }
+
+
+    public List<Map.Entry<String, Integer>> getUsersTopGenres(String code) throws IOException, SpotifyWebApiException {
         Track[] topTracks = getUsersTopTracks(code);
 
         Map<String, Integer> genreCounts = new HashMap<>();
@@ -118,12 +147,27 @@ public class SpotifyService {
                 genreCounts.put(genre, genreCounts.getOrDefault(genre, 0) + 1);
             }
         }
-        return genreCounts.entrySet()
-                .stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                .limit(10)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        List<Map.Entry<String, Integer>> sortedGenres = new ArrayList<>(genreCounts.entrySet());
+        sortedGenres.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+        return sortedGenres.subList(0, Math.min(sortedGenres.size(), 10));
+
+    }
+
+    public Playlist createNewPlaylist(Track[] listOfTracks) throws IOException, SpotifyWebApiException {
+        System.out.println(Arrays.toString(listOfTracks));
+        CreatePlaylistRequest createPlaylistRequest = spotifyApi.createPlaylist(getUserId(), "New playlist").build();
+        Playlist playlist = null;
+        try {
+            playlist = createPlaylistRequest.execute();
+            System.out.println("Playlist name: " + playlist.getName());
+        } catch (IOException | SpotifyWebApiException e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println(playlist.getId());
+        // add tracks to playlist
+        spotifyApi.addTracksToPlaylist(playlist.getId(), Arrays.stream(listOfTracks).map(Track::getUri).toArray(String[]::new)).build().execute();
+        return playlist;
 
     }
 

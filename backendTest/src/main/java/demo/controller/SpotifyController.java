@@ -2,7 +2,6 @@ package demo.controller;
 
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.Artist;
-import com.wrapper.spotify.model_objects.specification.Playlist;
 import com.wrapper.spotify.model_objects.specification.PlaylistSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import demo.model.ArtistResponse;
@@ -17,6 +16,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class SpotifyController {
@@ -34,7 +34,7 @@ public class SpotifyController {
     public RedirectView callback(@RequestParam("code") String code) {
         setAuthorizationCode(code);
         System.out.println("Code: " + code);
-        return new RedirectView("/artists");
+        return new RedirectView("/create-playlist-with-related-artists");
     }
 
     @GetMapping("/playlists")
@@ -46,6 +46,12 @@ public class SpotifyController {
     @GetMapping("/artists")
     public List<ArtistResponse> getTopArtists() throws IOException, SpotifyWebApiException {
         Artist[] artists = spotifyService.getUsersTopArtists(authorizationCode);
+        return ArtistResponse.buildResponse(artists);
+    }
+
+    @GetMapping("/related-artists")
+    public List<ArtistResponse> getRelatedArtists() throws IOException, SpotifyWebApiException {
+        Artist[] artists = spotifyService.getTopArtistsRelatedArtists(authorizationCode);
         return ArtistResponse.buildResponse(artists);
     }
 
@@ -62,13 +68,19 @@ public class SpotifyController {
     }
 
     @GetMapping("/top-genres")
-    public List<String> getTopGenres() throws IOException, SpotifyWebApiException {
+    public List<Map.Entry<String, Integer>> getTopGenres() throws IOException, SpotifyWebApiException {
         return spotifyService.getUsersTopGenres(authorizationCode);
     }
 
-    @GetMapping("/create-playlist")
+    @GetMapping("/create-playlist-with-top-tracks")
     public String getPlaylistWithTopTracks() throws IOException, SpotifyWebApiException {
         String playlistId = String.valueOf(spotifyService.createPlaylistWithTopTracks(authorizationCode));
+        return "Created playlist with ID: " + playlistId;
+    }
+
+    @GetMapping("/create-playlist-with-related-artists")
+    public String getPlaylistWithTopArtists() throws IOException, SpotifyWebApiException {
+        String playlistId = String.valueOf(spotifyService.createPlaylistFromRelatedArtists(authorizationCode));
         return "Created playlist with ID: " + playlistId;
     }
 
