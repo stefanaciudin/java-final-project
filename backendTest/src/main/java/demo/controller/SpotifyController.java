@@ -2,9 +2,11 @@ package demo.controller;
 
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
 import com.wrapper.spotify.model_objects.specification.Artist;
+import com.wrapper.spotify.model_objects.specification.PlayHistory;
 import com.wrapper.spotify.model_objects.specification.PlaylistSimplified;
 import com.wrapper.spotify.model_objects.specification.Track;
 import demo.model.ArtistResponse;
+import demo.model.PlayHistoryResponse;
 import demo.model.PlaylistResponse;
 import demo.model.TrackResponse;
 import demo.service.AuthService;
@@ -34,7 +36,7 @@ public class SpotifyController {
     public RedirectView callback(@RequestParam("code") String code) {
         setAuthorizationCode(code);
         System.out.println("Code: " + code);
-        return new RedirectView("/create-playlist-with-related-artists");
+        return new RedirectView("/track-history");
     }
 
     @GetMapping("/playlists")
@@ -59,6 +61,12 @@ public class SpotifyController {
     public List<ArtistResponse> getFollowedArtists() throws IOException, SpotifyWebApiException {
         Artist[] artists = spotifyService.getFollowedArtists(authorizationCode);
         return ArtistResponse.buildResponse(artists);
+    }
+
+    @GetMapping("/track-history")
+    public List<PlayHistoryResponse> getTrackHistory() throws IOException, SpotifyWebApiException {
+        PlayHistory[] history = spotifyService.getTrackHistory(authorizationCode);
+        return PlayHistoryResponse.buildResponse(history);
     }
 
     @GetMapping("/top-tracks")

@@ -9,6 +9,7 @@ import com.wrapper.spotify.requests.data.artists.GetArtistsTopTracksRequest;
 import com.wrapper.spotify.requests.data.follow.GetUsersFollowedArtistsRequest;
 import com.wrapper.spotify.requests.data.personalization.simplified.GetUsersTopArtistsRequest;
 import com.wrapper.spotify.requests.data.personalization.simplified.GetUsersTopTracksRequest;
+import com.wrapper.spotify.requests.data.player.GetCurrentUsersRecentlyPlayedTracksRequest;
 import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.GetListOfCurrentUsersPlaylistsRequest;
 import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileRequest;
@@ -81,6 +82,19 @@ public class SpotifyService {
             }
         }
         return relatedArtists;
+    }
+
+    public PlayHistory[] getTrackHistory(String code) throws IOException, SpotifyWebApiException {
+        setToken(code);
+        GetCurrentUsersRecentlyPlayedTracksRequest getUsersRecentlyPlayedTracksRequest = spotifyApi.getCurrentUsersRecentlyPlayedTracks().limit(50).build();
+        try {
+            final PagingCursorbased<PlayHistory> playHistoryCursorBasedPaging = getUsersRecentlyPlayedTracksRequest.execute();
+            return playHistoryCursorBasedPaging.getItems();
+        } catch (IOException | SpotifyWebApiException e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return new PlayHistory[0];
     }
 
     public Track[] getUsersTopTracks(String code) throws IOException, SpotifyWebApiException {
