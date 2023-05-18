@@ -2,7 +2,7 @@ import { React, useState } from "react";
 import { motion } from "framer-motion";
 import VisibilitySensor from "react-visibility-sensor";
 
-function Top({ icon, title }) {
+function Top({ icon, title, content, link, artists }) {
     const variant = {
         true: {
             transform: "scale(1)",
@@ -16,7 +16,6 @@ function Top({ icon, title }) {
     return (
         <VisibilitySensor
             onChange={(isVisible) => setElementIsVisible(isVisible)}
-        // minTopValue={100}
         >
             <div className="feature flex items-center justify-center flex-col relative text-center mx-12 text-[#bac2de]">
                 {/* icon */}
@@ -39,13 +38,24 @@ function Top({ icon, title }) {
                 <span className="mt-5"><b>{title}</b></span>
 
                 <span className="text-[#a6adc8] mt-4">
-                    Nunc elementum, dolor vitae lacinia pulvinar, augue felis scelerisque
-                    libero, sit amet laoreet lorem.
+                    {content}
                 </span>
 
-                <span className="text-[#7f849c] underline mt-[3rem] hover:cursor-pointer">
-                    Learn more
-                </span>
+                <ul className="text-[#a6adc8] mt-4">
+                    {/* {console.log(artists)} */}
+                    {artists.slice(0, 5).map((artist, index) => (
+                        <div key={index}>
+                            {`${index + 1}. ${artist}`}
+                        </div>
+                    ))}
+                    {/* {artists} */}
+                </ul>
+
+                <a href={link}>
+                    <span className="text-[#7f849c] underline hover:cursor-pointer">
+                        Try it here 
+                    </span>
+                </a>
             </div>
         </VisibilitySensor>
     );

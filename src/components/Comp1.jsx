@@ -56,12 +56,16 @@ function Comp1() {
                         Or sign up. It's really cool.
                     </span>
                     <div className="buttons flex">
+                        <a href="http://localhost:8080/login">
                         <button className={" mt-[20px] text-[15px] mr-[35px] hover:bg-[#cba6f7] border-[2px] rounded-[10px] border-[#cba6f7] px-[25px] py-[7px]"}>
                             Log in
                         </button>
-                        <button className={"mt-[20px] text-[#1e1e2e] text-[15px] mr-[35px] hover:bg-[#cba6f7] border-[2px] rounded-[10px] border-[#cba6f7] px-[25px] py-[7px] bg-[#cba6f7]"}>
+                        </a>
+                        <a href="https://www.spotify.com/us/signup?forward_url=https%3A%2F%2Fopen.spotify.com%2F">
+                        <button className={"mt-[20px] text-[#1e1e2e] text-[15px] mr-[35px] border-[2px] rounded-[10px] border-[#cba6f7] px-[25px] py-[7px] bg-[#cba6f7]"}>
                             Sign up
                         </button>
+                        </a>
                     </div>
                 </div>
                 {/* right side */}
