@@ -3,7 +3,9 @@ package demo.service;
 import com.neovisionaries.i18n.CountryCode;
 import com.wrapper.spotify.enums.ModelObjectType;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
+import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import com.wrapper.spotify.model_objects.specification.*;
+import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 import com.wrapper.spotify.requests.data.artists.GetArtistsRelatedArtistsRequest;
 import com.wrapper.spotify.requests.data.artists.GetArtistsTopTracksRequest;
 import com.wrapper.spotify.requests.data.follow.GetUsersFollowedArtistsRequest;
@@ -13,18 +15,22 @@ import com.wrapper.spotify.requests.data.player.GetCurrentUsersRecentlyPlayedTra
 import com.wrapper.spotify.requests.data.playlists.CreatePlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.GetListOfCurrentUsersPlaylistsRequest;
 import com.wrapper.spotify.requests.data.users_profile.GetCurrentUsersProfileRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
 
-import static demo.service.AuthService.setToken;
 import static demo.service.AuthService.spotifyApi;
 
 @Service
 public class SpotifyService {
-    public PlaylistSimplified[] getCurrentUsersPlaylists(String code) throws IOException, SpotifyWebApiException {
-        setToken(code);
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    public PlaylistSimplified[] getCurrentUsersPlaylists(String code) {
+        spotifyApi.setAccessToken(code);
         Paging<PlaylistSimplified> playlists = null;
         GetListOfCurrentUsersPlaylistsRequest getListOfCurrentUsersPlaylistsRequest = spotifyApi.getListOfCurrentUsersPlaylists().limit(50).offset(0).build();
         try {
@@ -37,9 +43,9 @@ public class SpotifyService {
         return new PlaylistSimplified[0];
     }
 
-    public Artist[] getFollowedArtists(String code) throws IOException, SpotifyWebApiException {
+    public Artist[] getFollowedArtists(String code) {
         ModelObjectType type = ModelObjectType.ARTIST;
-        setToken(code);
+        spotifyApi.setAccessToken(code);
         GetUsersFollowedArtistsRequest getUsersFollowedArtistsRequest = spotifyApi.getUsersFollowedArtists(type).build();
         try {
             final PagingCursorbased<Artist> artistPagingCursorbased = getUsersFollowedArtistsRequest.execute();
@@ -51,9 +57,9 @@ public class SpotifyService {
         return new Artist[0];
     }
 
-    public Artist[] getUsersTopArtists(String code) throws IOException, SpotifyWebApiException {
-        setToken(code);
-        GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyApi.getUsersTopArtists().limit(50).time_range("long_term").build();
+    public Artist[] getUsersTopArtists(String code, String timeRange) {
+        spotifyApi.setAccessToken(code);
+        GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyApi.getUsersTopArtists().limit(50).time_range(timeRange).build();
         try {
             final Paging<Artist> artists = getUsersTopArtistsRequest.execute();
             System.out.println("Total artists: " + artists.getTotal());
@@ -65,15 +71,15 @@ public class SpotifyService {
         return new Artist[0];
     }
 
-    public Artist[] getTopArtistsRelatedArtists(String code) throws IOException, SpotifyWebApiException {
+    public Artist[] getTopArtistsRelatedArtists(String code) {
         // get related artists for the top 2 artists
-        Artist[] topArtists = getUsersTopArtists(code);
+        String timeRange = "medium_term";
+        Artist[] topArtists = getUsersTopArtists(code, timeRange);
         Artist[] relatedArtists = new Artist[0];
         for (int i = 0; i < 2; i++) {
             GetArtistsRelatedArtistsRequest getArtistsRelatedArtistsRequest = spotifyApi.getArtistsRelatedArtists(topArtists[i].getId()).build();
             try {
                 final Artist[] artists = getArtistsRelatedArtistsRequest.execute();
-                //System.out.println("Total related artists: " + artists.length);
                 relatedArtists = Arrays.copyOf(relatedArtists, relatedArtists.length + artists.length);
                 System.arraycopy(artists, 0, relatedArtists, relatedArtists.length - artists.length, artists.length);
             } catch (IOException | SpotifyWebApiException e) {
@@ -84,8 +90,8 @@ public class SpotifyService {
         return relatedArtists;
     }
 
-    public PlayHistory[] getTrackHistory(String code) throws IOException, SpotifyWebApiException {
-        setToken(code);
+    public PlayHistory[] getTrackHistory(String code) {
+        spotifyApi.setAccessToken(code);
         GetCurrentUsersRecentlyPlayedTracksRequest getUsersRecentlyPlayedTracksRequest = spotifyApi.getCurrentUsersRecentlyPlayedTracks().limit(50).build();
         try {
             final PagingCursorbased<PlayHistory> playHistoryCursorBasedPaging = getUsersRecentlyPlayedTracksRequest.execute();
@@ -97,8 +103,8 @@ public class SpotifyService {
         return new PlayHistory[0];
     }
 
-    public Track[] getUsersTopTracks(String code) throws IOException, SpotifyWebApiException {
-        setToken(code);
+    public Track[] getUsersTopTracks(String code) {
+        spotifyApi.setAccessToken(code);
         GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyApi.getUsersTopTracks().time_range("long_term").limit(50).build();
         try {
             final Paging<Track> tracks = getUsersTopTracksRequest.execute();
@@ -113,7 +119,6 @@ public class SpotifyService {
     }
 
     public Track[] getArtistsTopTracks(String artistId) {
-        //setToken(code);
         GetArtistsTopTracksRequest getArtistsTopTracksRequest = spotifyApi.getArtistsTopTracks(artistId, CountryCode.US).build();
         try {
             final Track[] tracks = getArtistsTopTracksRequest.execute();
@@ -127,7 +132,7 @@ public class SpotifyService {
     }
 
     public Playlist createPlaylistWithTopTracks(String code) throws IOException, SpotifyWebApiException {
-        //setToken(code);
+        spotifyApi.setAccessToken(code);
         Track[] topTracks = getUsersTopTracks(code);
         return createNewPlaylist(topTracks);
     }
@@ -167,9 +172,18 @@ public class SpotifyService {
 
     }
 
+
     public Playlist createNewPlaylist(Track[] listOfTracks) throws IOException, SpotifyWebApiException {
         System.out.println(Arrays.toString(listOfTracks));
-        CreatePlaylistRequest createPlaylistRequest = spotifyApi.createPlaylist(getUserId(), "New playlist").build();
+
+        // Query to fetch a random playlist name from the database
+        String query = "SELECT name FROM playlist_names ORDER BY RAND() LIMIT 1";
+
+        // Execute the query and retrieve the random playlist name
+        String playlistName = jdbcTemplate.queryForObject(query, String.class);
+        System.out.println("Playlist name: " + playlistName);
+
+        CreatePlaylistRequest createPlaylistRequest = spotifyApi.createPlaylist(getUserId(), playlistName).build();
         Playlist playlist = null;
         try {
             playlist = createPlaylistRequest.execute();
@@ -179,10 +193,10 @@ public class SpotifyService {
             e.printStackTrace();
         }
         System.out.println(playlist.getId());
+
         // add tracks to playlist
         spotifyApi.addTracksToPlaylist(playlist.getId(), Arrays.stream(listOfTracks).map(Track::getUri).toArray(String[]::new)).build().execute();
         return playlist;
-
     }
 
     public String getUserId() {
@@ -195,6 +209,12 @@ public class SpotifyService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String retrieveAccessToken(String authorizationCode) throws IOException, SpotifyWebApiException {
+        AuthorizationCodeRequest authorizationCodeRequest = spotifyApi.authorizationCode(authorizationCode).build();
+        AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodeRequest.execute();
+        return authorizationCodeCredentials.getAccessToken();
     }
 
 }

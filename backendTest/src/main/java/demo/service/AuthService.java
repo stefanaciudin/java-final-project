@@ -2,6 +2,7 @@ package demo.service;
 
 import com.wrapper.spotify.SpotifyApi;
 import com.wrapper.spotify.exceptions.SpotifyWebApiException;
+import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 
@@ -35,4 +36,5 @@ public class AuthService {
         AuthorizationCodeRequest authorizationCodeRequest = spotifyApi.authorizationCode(code).build();
         spotifyApi.setAccessToken(authorizationCodeRequest.execute().getAccessToken());
     }
+
 }

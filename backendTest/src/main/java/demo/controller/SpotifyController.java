@@ -24,6 +24,7 @@ import java.util.Map;
 public class SpotifyController {
     private final SpotifyService spotifyService = new SpotifyService();
     private String authorizationCode;
+    private String accessToken;
 
     @GetMapping("/login")
     @ResponseBody
@@ -33,66 +34,73 @@ public class SpotifyController {
     }
 
     @GetMapping("/callback")
-    public RedirectView callback(@RequestParam("code") String code) {
+    public RedirectView callback(@RequestParam("code") String code) throws IOException, SpotifyWebApiException {
         setAuthorizationCode(code);
-        System.out.println("Code: " + code);
-        return new RedirectView("/track-history");
+        accessToken = spotifyService.retrieveAccessToken(authorizationCode);
+        setAccessToken(accessToken);
+        return new RedirectView("http://localhost:3001/stats");
     }
 
     @GetMapping("/playlists")
     public List<PlaylistResponse> getPlaylists() throws IOException, SpotifyWebApiException {
-        PlaylistSimplified[] playlists = spotifyService.getCurrentUsersPlaylists(authorizationCode);
+        PlaylistSimplified[] playlists = spotifyService.getCurrentUsersPlaylists(accessToken);
         return PlaylistResponse.buildResponse(Arrays.asList(playlists));
     }
 
     @GetMapping("/artists")
     public List<ArtistResponse> getTopArtists() throws IOException, SpotifyWebApiException {
-        Artist[] artists = spotifyService.getUsersTopArtists(authorizationCode);
+        String timeRange = "medium_term";
+        Artist[] artists = spotifyService.getUsersTopArtists(accessToken,timeRange);
         return ArtistResponse.buildResponse(artists);
     }
 
     @GetMapping("/related-artists")
     public List<ArtistResponse> getRelatedArtists() throws IOException, SpotifyWebApiException {
-        Artist[] artists = spotifyService.getTopArtistsRelatedArtists(authorizationCode);
+        Artist[] artists = spotifyService.getTopArtistsRelatedArtists(accessToken);
         return ArtistResponse.buildResponse(artists);
     }
 
     @GetMapping("/followed-artists")
     public List<ArtistResponse> getFollowedArtists() throws IOException, SpotifyWebApiException {
-        Artist[] artists = spotifyService.getFollowedArtists(authorizationCode);
+        Artist[] artists = spotifyService.getFollowedArtists(accessToken);
         return ArtistResponse.buildResponse(artists);
     }
 
     @GetMapping("/track-history")
     public List<PlayHistoryResponse> getTrackHistory() throws IOException, SpotifyWebApiException {
-        PlayHistory[] history = spotifyService.getTrackHistory(authorizationCode);
+        PlayHistory[] history = spotifyService.getTrackHistory(accessToken);
         return PlayHistoryResponse.buildResponse(history);
     }
 
     @GetMapping("/top-tracks")
     public List<TrackResponse> getTopTracks() throws IOException, SpotifyWebApiException {
-        Track[] tracks = spotifyService.getUsersTopTracks(authorizationCode);
+        Track[] tracks = spotifyService.getUsersTopTracks(accessToken);
         return TrackResponse.buildResponse(tracks);
     }
 
     @GetMapping("/top-genres")
     public List<Map.Entry<String, Integer>> getTopGenres() throws IOException, SpotifyWebApiException {
-        return spotifyService.getUsersTopGenres(authorizationCode);
+        return spotifyService.getUsersTopGenres(accessToken);
     }
 
     @GetMapping("/create-playlist-with-top-tracks")
     public String getPlaylistWithTopTracks() throws IOException, SpotifyWebApiException {
-        String playlistId = String.valueOf(spotifyService.createPlaylistWithTopTracks(authorizationCode));
+        String playlistId = String.valueOf(spotifyService.createPlaylistWithTopTracks(accessToken));
         return "Created playlist with ID: " + playlistId;
     }
 
     @GetMapping("/create-playlist-with-related-artists")
     public String getPlaylistWithTopArtists() throws IOException, SpotifyWebApiException {
-        String playlistId = String.valueOf(spotifyService.createPlaylistFromRelatedArtists(authorizationCode));
+        String playlistId = String.valueOf(spotifyService.createPlaylistFromRelatedArtists(accessToken));
         return "Created playlist with ID: " + playlistId;
     }
 
     public void setAuthorizationCode(String authorizationCode) {
         this.authorizationCode = authorizationCode;
+    }
+
+    public void setAccessToken(String accessToken) {
+        System.out.println("Access token: " + accessToken);
+        this.accessToken = accessToken;
     }
 }
