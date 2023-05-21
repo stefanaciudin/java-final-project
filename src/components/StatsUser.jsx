@@ -27,9 +27,15 @@ function StatsUser() {
                     </div>
                     {/* right side */}
                     <div className="buttons flex flex-col items-center">
-                        <button className={buttonStyle}>Top Tracks</button>
+                        <a href="http://localhost:8080/top-tracks">
+                            <button className={buttonStyle}>Top Tracks</button>
+                        </a>
+                        <a href="http://localhost:8080/artists">
                         <button className={buttonStyle}>Top Artists</button>
+                        </a>
+                        <a href="http://localhost:8080/top-genres">
                         <button className={buttonStyle}>Top Genres</button>
+                        </a>
                     </div>
                 </div>
                 <div className="experience flex flex-col items-center justify-start px-[5rem] bg-[#181825] h-[60rem] pt-[18rem] mt-[-10rem] relative z-[2] rounded-b-[5rem]">
@@ -42,6 +48,21 @@ function StatsUser() {
                         </span>
                     </div>
                     {/* info*/}
+                    <div className="feature flex items-center justify-around mt-[6rem] w-[100%]">
+                        <Top icon="calendar" title="Custom time ranges"
+                            content="See your recent data or your data from the past 6 months.
+                        to you."/>
+
+                        <Top icon="playlist" title="Create playlists"
+                            content="Create playlists with your most listened songs.
+                        Or, if you're feeling brave, we can make you a playlist
+                        with suggested artists based on your listening history."/>
+                        <Top icon="time" title="Updated daily"
+                            content="Your data is updated daily, so you can always 
+                            come back and check again."
+                        />
+
+                    </div>
 
                 </div>
             </div>

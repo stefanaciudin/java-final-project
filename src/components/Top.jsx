@@ -36,26 +36,26 @@ function Top({ icon, title, content, link, artists }) {
                 </motion.div>
 
                 <span className="mt-5"><b>{title}</b></span>
-
                 <span className="text-[#a6adc8] mt-4">
                     {content}
                 </span>
 
-                <ul className="text-[#a6adc8] mt-4">
-                    {/* {console.log(artists)} */}
-                    {artists.slice(0, 5).map((artist, index) => (
-                        <div key={index}>
-                            {`${index + 1}. ${artist}`}
-                        </div>
-                    ))}
-                    {/* {artists} */}
-                </ul>
+                {artists && artists.length > 0 && (
+                    <ul className="text-[#a6adc8] mt-4">
+                        {artists.slice(0, 5).map((artist, index) => (
+                            <div key={index}>{`${index + 1}. ${artist}`}</div>
+                        ))}
+                    </ul>
+                )}
 
                 <a href={link}>
-                    <span className="text-[#7f849c] underline hover:cursor-pointer">
-                        Try it here 
-                    </span>
+                    {link && (
+                        <span className="text-[#7f849c] underline hover:cursor-pointer">
+                            Try it here
+                        </span>
+                    )}
                 </a>
+
             </div>
         </VisibilitySensor>
     );
