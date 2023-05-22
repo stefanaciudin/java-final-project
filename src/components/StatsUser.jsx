@@ -5,7 +5,9 @@ import Top from "./Top";
 
 function StatsUser() {
     const [elementIsVisible, setElementIsVisible] = useState(false);
-    const buttonStyle = "mt-[20px] text-[#1e1e2e] text-[15px] mr-[185px] border-[2px] rounded-[10px] border-[#cba6f7] px-[85px] py-[17px] bg-[#cba6f7]";
+    const buttonStyle = "mt-[20px] text-[#1e1e2e] text-[15px] mr-[30px] border-[2px] rounded-[10px] border-[#cba6f7] px-[85px] py-[20px] bg-[#cba6f7]";
+
+
     return (
         <VisibilitySensor
             onChange={(isVisible) => setElementIsVisible(isVisible)}
@@ -27,14 +29,17 @@ function StatsUser() {
                     </div>
                     {/* right side */}
                     <div className="buttons flex flex-col items-center">
-                        <a href="http://localhost:8080/top-tracks">
+                        <a href="http://localhost:3001/stats/top-tracks">
                             <button className={buttonStyle}>Top Tracks</button>
                         </a>
-                        <a href="http://localhost:8080/artists">
+                        <a href="http://localhost:3001/stats/top-artists">
                         <button className={buttonStyle}>Top Artists</button>
                         </a>
-                        <a href="http://localhost:8080/top-genres">
+                        <a href="http://localhost:3001/stats/top-genres">
                         <button className={buttonStyle}>Top Genres</button>
+                        </a>
+                        <a href="http://localhost:3001/stats/track-history">
+                            <button className={buttonStyle}>Last Played</button>
                         </a>
                     </div>
                 </div>
