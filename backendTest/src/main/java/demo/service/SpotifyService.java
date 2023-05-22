@@ -46,16 +46,32 @@ public class SpotifyService {
     public Artist[] getFollowedArtists(String code) {
         ModelObjectType type = ModelObjectType.ARTIST;
         spotifyApi.setAccessToken(code);
-        GetUsersFollowedArtistsRequest getUsersFollowedArtistsRequest = spotifyApi.getUsersFollowedArtists(type).build();
+        GetUsersFollowedArtistsRequest getUsersFollowedArtistsRequest = spotifyApi.getUsersFollowedArtists(type).limit(50).build();
+
+        List<Artist> allFollowedArtists = new ArrayList<>();
+        PagingCursorbased<Artist> artistPagingCursorbased = null;
+
         try {
-            final PagingCursorbased<Artist> artistPagingCursorbased = getUsersFollowedArtistsRequest.execute();
-            System.out.println("Total: " + artistPagingCursorbased.getTotal());
-            return artistPagingCursorbased.getItems();
+            do {
+                artistPagingCursorbased = getUsersFollowedArtistsRequest.execute();
+                Artist[] artists = artistPagingCursorbased.getItems();
+                allFollowedArtists.addAll(Arrays.asList(artists));
+
+                // Check if there are more pages to fetch
+                if (artistPagingCursorbased.getNext() != null) {
+                    System.out.println("Next page: " + artistPagingCursorbased.getNext());
+                    getUsersFollowedArtistsRequest = spotifyApi.getUsersFollowedArtists(type)
+                            .after(artistPagingCursorbased.getNext())
+                            .build();
+                }
+            } while (artistPagingCursorbased.getNext() != null);
         } catch (IOException | SpotifyWebApiException e) {
             System.out.println("Error: " + e.getMessage());
         }
-        return new Artist[0];
+
+        return allFollowedArtists.toArray(new Artist[0]);
     }
+
 
     public Artist[] getUsersTopArtists(String code, String timeRange) {
         spotifyApi.setAccessToken(code);
@@ -103,9 +119,9 @@ public class SpotifyService {
         return new PlayHistory[0];
     }
 
-    public Track[] getUsersTopTracks(String code) {
+    public Track[] getUsersTopTracks(String code, String timeRange) {
         spotifyApi.setAccessToken(code);
-        GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyApi.getUsersTopTracks().time_range("long_term").limit(50).build();
+        GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyApi.getUsersTopTracks().time_range(timeRange).limit(50).build();
         try {
             final Paging<Track> tracks = getUsersTopTracksRequest.execute();
             System.out.println("Total tracks: " + tracks.getTotal());
@@ -133,7 +149,7 @@ public class SpotifyService {
 
     public Playlist createPlaylistWithTopTracks(String code) throws IOException, SpotifyWebApiException {
         spotifyApi.setAccessToken(code);
-        Track[] topTracks = getUsersTopTracks(code);
+        Track[] topTracks = getUsersTopTracks(code, "medium_term");
         return createNewPlaylist(topTracks);
     }
 
@@ -142,13 +158,11 @@ public class SpotifyService {
         Track[] relatedTracks = new Track[0];
         for (Artist artist : relatedArtists) {
             Track track = getArtistsTopTracks(artist.getId())[0];
-            // create a new array with length one greater than relatedTracks
             Track[] newTracks = new Track[relatedTracks.length + 1];
-            // copy all elements of relatedTracks into the new array
+            // copy into the new array
             System.arraycopy(relatedTracks, 0, newTracks, 0, relatedTracks.length);
-            // add the new element to the end of the new array
+            // add the new element to the end of the new array and update relatedTracks
             newTracks[newTracks.length - 1] = track;
-            // update relatedTracks to point to the new array
             relatedTracks = newTracks;
         }
         System.out.println("Length of related tracks " + relatedTracks.length);
@@ -156,8 +170,8 @@ public class SpotifyService {
     }
 
 
-    public List<Map.Entry<String, Integer>> getUsersTopGenres(String code) throws IOException, SpotifyWebApiException {
-        Track[] topTracks = getUsersTopTracks(code);
+    public List<Map.Entry<String, Integer>> getUsersTopGenres(String code, String timeRange) throws IOException, SpotifyWebApiException {
+        Track[] topTracks = getUsersTopTracks(code, timeRange);
 
         Map<String, Integer> genreCounts = new HashMap<>();
         for (Track track : topTracks) {
@@ -168,7 +182,7 @@ public class SpotifyService {
         }
         List<Map.Entry<String, Integer>> sortedGenres = new ArrayList<>(genreCounts.entrySet());
         sortedGenres.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
-        return sortedGenres.subList(0, Math.min(sortedGenres.size(), 10));
+        return sortedGenres.subList(0, Math.min(sortedGenres.size(), 25));
 
     }
 

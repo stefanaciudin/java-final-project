@@ -9,6 +9,7 @@ import java.util.List;
 public class TrackResponse {
     private String name;
     private ArtistSimplified[] artists;
+    private String imageUrl;
 
 
     public static List<TrackResponse> buildResponse(Track[] tracks) {
@@ -17,6 +18,7 @@ public class TrackResponse {
             TrackResponse trackResponse = new TrackResponse();
             trackResponse.setName(track.getName());
             trackResponse.setArtists(track.getArtists());
+            trackResponse.setImageUrl(track.getAlbum().getImages()[0].getUrl()); // set the image url for the given artist
             response.add(trackResponse);
         }
         return response;
@@ -36,5 +38,13 @@ public class TrackResponse {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

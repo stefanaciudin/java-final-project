@@ -16,9 +16,6 @@ public class PlayHistoryResponse {
     private String artist;
     private String date;
 
-    public PlayHistoryResponse(String name, List<String> artistNames, Date playedAt) {
-    }
-
 
     public static List<PlayHistoryResponse> buildResponse(PlayHistory[] playHistory) {
         List<PlayHistoryResponse> responseList = new ArrayList<>();
@@ -32,6 +29,7 @@ public class PlayHistoryResponse {
             response.setName(track.getName());
             response.setArtist(String.join(", ", artistNames));
             response.setDate(history.getPlayedAt().toString());
+
 
             responseList.add(response);
         }

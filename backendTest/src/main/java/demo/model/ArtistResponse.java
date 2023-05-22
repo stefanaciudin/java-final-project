@@ -7,8 +7,8 @@ import java.util.List;
 
 public class ArtistResponse {
     private String name;
-
     private String[] genres;
+    private String imageUrl;
 
     public static List<ArtistResponse> buildResponse(Artist[] artists) {
         List<ArtistResponse> response = new ArrayList<>();
@@ -16,6 +16,7 @@ public class ArtistResponse {
             ArtistResponse artistResponse = new ArtistResponse();
             artistResponse.setName(artist.getName());
             artistResponse.setGenres(artist.getGenres());
+            artistResponse.setImageUrl(artist.getImages()[0].getUrl()); // set the image url for the given artist
             response.add(artistResponse);
         }
         return response;
@@ -35,5 +36,13 @@ public class ArtistResponse {
 
     public void setGenres(String[] genres) {
         this.genres = genres;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

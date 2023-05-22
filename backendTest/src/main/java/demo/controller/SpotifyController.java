@@ -42,45 +42,49 @@ public class SpotifyController {
     }
 
     @GetMapping("/playlists")
-    public List<PlaylistResponse> getPlaylists() throws IOException, SpotifyWebApiException {
+    public List<PlaylistResponse> getPlaylists() {
         PlaylistSimplified[] playlists = spotifyService.getCurrentUsersPlaylists(accessToken);
         return PlaylistResponse.buildResponse(Arrays.asList(playlists));
     }
 
-    @GetMapping("/artists")
-    public List<ArtistResponse> getTopArtists() throws IOException, SpotifyWebApiException {
-        String timeRange = "medium_term";
-        Artist[] artists = spotifyService.getUsersTopArtists(accessToken,timeRange);
+    @CrossOrigin(origins = "http://localhost:3001")
+    @GetMapping("/top-artists")
+    public List<ArtistResponse> getTopArtists(@RequestParam String timeRange) {
+        Artist[] artists = spotifyService.getUsersTopArtists(accessToken, timeRange);
         return ArtistResponse.buildResponse(artists);
     }
 
     @GetMapping("/related-artists")
-    public List<ArtistResponse> getRelatedArtists() throws IOException, SpotifyWebApiException {
+    public List<ArtistResponse> getRelatedArtists() {
         Artist[] artists = spotifyService.getTopArtistsRelatedArtists(accessToken);
         return ArtistResponse.buildResponse(artists);
     }
 
+    @CrossOrigin(origins = "http://localhost:3001")
     @GetMapping("/followed-artists")
-    public List<ArtistResponse> getFollowedArtists() throws IOException, SpotifyWebApiException {
+    public List<ArtistResponse> getFollowedArtists() {
         Artist[] artists = spotifyService.getFollowedArtists(accessToken);
         return ArtistResponse.buildResponse(artists);
     }
 
+    @CrossOrigin(origins = "http://localhost:3001")
     @GetMapping("/track-history")
-    public List<PlayHistoryResponse> getTrackHistory() throws IOException, SpotifyWebApiException {
+    public List<PlayHistoryResponse> getTrackHistory() {
         PlayHistory[] history = spotifyService.getTrackHistory(accessToken);
         return PlayHistoryResponse.buildResponse(history);
     }
 
+    @CrossOrigin(origins = "http://localhost:3001")
     @GetMapping("/top-tracks")
-    public List<TrackResponse> getTopTracks() throws IOException, SpotifyWebApiException {
-        Track[] tracks = spotifyService.getUsersTopTracks(accessToken);
+    public List<TrackResponse> getTopTracks(@RequestParam String timeRange) {
+        Track[] tracks = spotifyService.getUsersTopTracks(accessToken, timeRange);
         return TrackResponse.buildResponse(tracks);
     }
 
+    @CrossOrigin(origins = "http://localhost:3001")
     @GetMapping("/top-genres")
-    public List<Map.Entry<String, Integer>> getTopGenres() throws IOException, SpotifyWebApiException {
-        return spotifyService.getUsersTopGenres(accessToken);
+    public List<Map.Entry<String, Integer>> getTopGenres(@RequestParam String timeRange) throws IOException, SpotifyWebApiException {
+        return spotifyService.getUsersTopGenres(accessToken, timeRange);
     }
 
     @GetMapping("/create-playlist-with-top-tracks")
