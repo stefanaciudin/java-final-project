@@ -9,6 +9,7 @@ public class ArtistResponse {
     private String name;
     private String[] genres;
     private String imageUrl;
+    private String artistUrl;
 
     public static List<ArtistResponse> buildResponse(Artist[] artists) {
         List<ArtistResponse> response = new ArrayList<>();
@@ -17,9 +18,15 @@ public class ArtistResponse {
             artistResponse.setName(artist.getName());
             artistResponse.setGenres(artist.getGenres());
             artistResponse.setImageUrl(artist.getImages()[0].getUrl()); // set the image url for the given artist
+            artistResponse.setArtistUrl(transformUriToUrl(artist.getUri()));
             response.add(artistResponse);
         }
         return response;
+    }
+
+    public static String transformUriToUrl(String uri) {
+        String[] uriParts = uri.split(":");
+        return "http://open.spotify.com/artist/" + uriParts[2];
     }
 
     public String getName() {
@@ -44,5 +51,13 @@ public class ArtistResponse {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getArtistUrl() {
+        return artistUrl;
+    }
+
+    public void setArtistUrl(String artistUrl) {
+        this.artistUrl = artistUrl;
     }
 }

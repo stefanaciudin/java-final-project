@@ -12,6 +12,7 @@ import demo.model.TrackResponse;
 import demo.service.AuthService;
 import demo.service.SpotifyService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -22,6 +23,7 @@ import java.util.Map;
 
 @RestController
 public class SpotifyController {
+    @Autowired
     private final SpotifyService spotifyService = new SpotifyService();
     private String authorizationCode;
     private String accessToken;
@@ -39,12 +41,19 @@ public class SpotifyController {
         accessToken = spotifyService.retrieveAccessToken(authorizationCode);
         setAccessToken(accessToken);
         return new RedirectView("http://localhost:3001/stats");
+
     }
 
     @GetMapping("/playlists")
     public List<PlaylistResponse> getPlaylists() {
         PlaylistSimplified[] playlists = spotifyService.getCurrentUsersPlaylists(accessToken);
         return PlaylistResponse.buildResponse(Arrays.asList(playlists));
+    }
+
+    @CrossOrigin(origins = "http://localhost:3001")
+    @GetMapping("/match-percentage")
+    public Double getPercentage(@RequestParam String timeRange) {
+        return spotifyService.compareTopSongs(accessToken, timeRange);
     }
 
     @CrossOrigin(origins = "http://localhost:3001")
@@ -87,12 +96,14 @@ public class SpotifyController {
         return spotifyService.getUsersTopGenres(accessToken, timeRange);
     }
 
+    @CrossOrigin(origins = "http://localhost:3001")
     @GetMapping("/create-playlist-with-top-tracks")
     public String getPlaylistWithTopTracks() throws IOException, SpotifyWebApiException {
         String playlistId = String.valueOf(spotifyService.createPlaylistWithTopTracks(accessToken));
         return "Created playlist with ID: " + playlistId;
     }
 
+    @CrossOrigin(origins = "http://localhost:3001")
     @GetMapping("/create-playlist-with-related-artists")
     public String getPlaylistWithTopArtists() throws IOException, SpotifyWebApiException {
         String playlistId = String.valueOf(spotifyService.createPlaylistFromRelatedArtists(accessToken));

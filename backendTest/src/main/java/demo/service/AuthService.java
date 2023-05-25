@@ -1,12 +1,8 @@
 package demo.service;
 
 import com.wrapper.spotify.SpotifyApi;
-import com.wrapper.spotify.exceptions.SpotifyWebApiException;
-import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
-import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
 import com.wrapper.spotify.requests.authorization.authorization_code.AuthorizationCodeUriRequest;
 
-import java.io.IOException;
 import java.net.URI;
 
 public class AuthService {
@@ -26,15 +22,16 @@ public class AuthService {
                 .scope("playlist-read-private,user-read-email," +
                         "user-follow-read,user-top-read," +
                         "playlist-modify-public," +
-                        "user-read-recently-played")
+                        "user-read-recently-played," +
+                        "playlist-modify-private")
                 .build();
 
         return authorizationCodeUriRequest.execute();
     }
 
-    public static void setToken(String code) throws IOException, SpotifyWebApiException {
-        AuthorizationCodeRequest authorizationCodeRequest = spotifyApi.authorizationCode(code).build();
-        spotifyApi.setAccessToken(authorizationCodeRequest.execute().getAccessToken());
-    }
+//    public static void setToken(String code) throws IOException, SpotifyWebApiException {
+//        AuthorizationCodeRequest authorizationCodeRequest = spotifyApi.authorizationCode(code).build();
+//        spotifyApi.setAccessToken(authorizationCodeRequest.execute().getAccessToken());
+//    }
 
 }

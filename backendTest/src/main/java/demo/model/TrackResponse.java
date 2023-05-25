@@ -10,6 +10,7 @@ public class TrackResponse {
     private String name;
     private ArtistSimplified[] artists;
     private String imageUrl;
+    private String songUrl;
 
 
     public static List<TrackResponse> buildResponse(Track[] tracks) {
@@ -19,9 +20,15 @@ public class TrackResponse {
             trackResponse.setName(track.getName());
             trackResponse.setArtists(track.getArtists());
             trackResponse.setImageUrl(track.getAlbum().getImages()[0].getUrl()); // set the image url for the given artist
+            trackResponse.setSongUrl(transformUriToUrl(track.getUri()));
             response.add(trackResponse);
         }
         return response;
+    }
+
+    public static String transformUriToUrl(String uri) {
+        String[] uriParts = uri.split(":");
+        return "http://open.spotify.com/track/" + uriParts[2];
     }
 
     public ArtistSimplified[] getArtists() {
@@ -46,5 +53,13 @@ public class TrackResponse {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getSongUrl() {
+        return songUrl;
+    }
+
+    public void setSongUrl(String songUrl) {
+        this.songUrl = songUrl;
     }
 }
