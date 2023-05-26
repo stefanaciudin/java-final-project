@@ -9,7 +9,7 @@ function TopArtists() {
 
   const handleTimeRangeChange = (range) => {
     setTimeRange(range);
-    setPlaylistCreated(false); // Reset the playlist creation state
+    setPlaylistCreated(false); // reset the playlist creation state
     setPlaylistId('');
   };
 
@@ -31,7 +31,7 @@ function TopArtists() {
     try {
       const response = await fetch('http://localhost:8080/create-playlist-with-related-artists');
       const data = await response.text();
-      console.log(data); // Log the playlist creation response
+      console.log(data); // log the playlist creation response
       setPlaylistCreated(true);
       setPlaylistId(data);
     } catch (error) {
@@ -39,9 +39,9 @@ function TopArtists() {
     }
   };
 
-  const prop = "mt-4 ml-4 mr-4 text-sm text-[#cdd6f4] py-1 px-3 rounded-lg";
+  const prop = "mt-4 ml-4 mr-4 text-m text-[#cdd6f4] py-1 px-3 rounded-lg text-m";
 
-  // Get the appropriate time range label
+  // get the appropriate time range label
   const getTimeRangeLabel = () => {
     if (timeRange === 'short_term') {
       return 'these past weeks';
@@ -56,7 +56,7 @@ function TopArtists() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#1e1e2e]">
       <div className="mb-8">
-        {/* Time range buttons */}
+        {/* time range buttons */}
         <button
           onClick={() => handleTimeRangeChange('short_term')}
           className={`${prop} ${timeRange === 'short_term' ? 'bg-[#6c7086] hover:bg-[#7f849c]' : 'bg-transparent hover:bg-[#6c7086]'}`}
@@ -78,7 +78,7 @@ function TopArtists() {
       </div>
 
       <div className="flex flex-col items-center">
-        {/* Create playlist button */}
+        {/* create playlist button */}
         {!playlistCreated && (
           <button
             onClick={createPlaylist}
@@ -88,14 +88,14 @@ function TopArtists() {
           </button>
         )}
 
-        {/* Playlist creation message */}
+        {/* playlist creation message */}
         {playlistCreated && (
           <div className="text-[#cdd6f4] mb-4">
             {playlistId}
           </div>
         )}
 
-        {/* Display the top artists */}
+        {/* display the top artists */}
         {topArtists.map((artist) => (
           <div key={artist.name} className="flex flex-col items-center mb-8 text-[#cdd6f4]">
             <a href={artist.artistUrl}>

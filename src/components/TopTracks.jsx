@@ -9,7 +9,7 @@ function TopTracks() {
 
   const handleTimeRangeChange = (range) => {
     setTimeRange(range);
-    setPlaylistCreated(false); // Reset the playlist creation state
+    setPlaylistCreated(false); // reset the playlist creation state
     setPlaylistId('');
   };
 
@@ -49,9 +49,9 @@ function TopTracks() {
     }
   };
 
-  const prop = "mt-4 ml-4 mr-4 text-sm text-[#cdd6f4] py-1 px-3 rounded-lg";
+  const prop = "mt-4 ml-4 mr-4 text-m text-[#cdd6f4] py-1 px-3 rounded-lg";
 
-  // Get the appropriate time range label
+  // get the appropriate time range label
   const getTimeRangeLabel = () => {
     if (timeRange === 'short_term') {
       return 'these past weeks';
@@ -63,7 +63,7 @@ function TopTracks() {
     return '';
   };
 
-  // Get the match percentage message based on the percentage value
+  // get the match percentage message based on the percentage value
   const getMatchPercentageMessage = (percentage) => {
     if (percentage >= 0 && percentage <= 25) {
       return 'Your music is not very popular.';
@@ -78,7 +78,7 @@ function TopTracks() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#1e1e2e]">
       <div className="mb-8">
-        {/* Time range buttons */}
+        {/* time range buttons */}
         <button
           onClick={() => handleTimeRangeChange('short_term')}
           className={`${prop} ${timeRange === 'short_term' ? 'bg-[#6c7086] hover:bg-[#7f849c]' : 'bg-transparent hover:bg-[#6c7086]'}`}
@@ -100,7 +100,7 @@ function TopTracks() {
       </div>
 
       <div className="flex flex-col items-center">
-        {/* Create playlist button */}
+        {/* create playlist button */}
         {!playlistCreated && (
           <button
             onClick={createPlaylist}
@@ -110,14 +110,14 @@ function TopTracks() {
           </button>
         )}
 
-        {/* Playlist creation message */}
+        {/* [[laylist creation message */}
         {playlistCreated && (
           <div className="text-[#cdd6f4] mb-4">
             Created playlist with ID: {playlistId}
           </div>
         )}
 
-        {/* Match percentage message */}
+        {/* match percentage message */}
         { (
           <div className="text-[#b4befe] text-center font-semibold mt-4 mb-4">
             {matchPercentage}% of your top songs are in the top 11400 most listened songs on Spotify.
@@ -126,7 +126,7 @@ function TopTracks() {
           </div>
         )}
 
-        {/* Display the top tracks */}
+        {/* display the top tracks */}
         {topTracks.map((track) => (
           <div key={track.id} className="flex items-center mb-8 text-[#cdd6f4]">
             <a href={track.songUrl}>

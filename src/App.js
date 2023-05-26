@@ -10,6 +10,7 @@ import TopArtists from './components/TopArtists';
 import TopGenres from './components/TopGenres';
 import TrackHistory from './components/TrackHistory';
 import FollowedArtists from './components/FollowedArtists';
+import Playlists from './components/Playlists';
 
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
           <Route path="/stats/top-genres" element={<TopGenres />} />
           <Route path="/stats/track-history" element={<TrackHistory />} />
           <Route path="/stats/followed-artists" element={<FollowedArtists />} />
-          
+          <Route path="/stats/playlists" element={<Playlists />} />
         </Routes>
         <Footer />
       </div>

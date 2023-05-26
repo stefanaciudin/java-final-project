@@ -19,12 +19,14 @@ function FollowedArtists() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#1e1e2e]">
-      <h2 className="text-[#cdd6f4] font-semibold">Your Followed Artists</h2>
+      <h2 className="text-[#cdd6f4] text-xl font-semibold">Your Followed Artists</h2>
       <div className="flex flex-wrap justify-center mt-4">
-        {/* Display followed artists */}
+        {/* display followed artists */}
         {followedArtists.map((artist) => (
           <div key={artist.name} className="m-4">
-            <img src={artist.imageUrl} alt={artist.name} className="w-40 h-40 object-cover rounded-full" />
+            <a href={artist.artistUrl}>
+              <img src={artist.imageUrl} alt={artist.name} className="w-40 h-40 object-cover rounded-full" />
+            </a>
             <p className="text-[#cdd6f4] mt-2">{artist.name}</p>
           </div>
         ))}

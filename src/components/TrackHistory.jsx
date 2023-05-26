@@ -21,7 +21,7 @@ function TrackHistory() {
 
   return (
 <div className="flex flex-col items-center justify-center min-h-screen bg-[#1e1e2e]">
-  <h1 className="text-[#cdd6f4] font-semibold">Here are your last listened 50 songs:</h1>
+  <h1 className="text-[#cdd6f4] text-xl font-semibold">Here are your last listened 50 songs:</h1>
   <div className="mt-4 flex flex-col items-center mb-8">
     {/* display the recent tracks if available */}
     {recentTracks.length > 0 ? (

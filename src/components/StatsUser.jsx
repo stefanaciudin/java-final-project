@@ -41,6 +41,9 @@ function StatsUser() {
                         <a href="http://localhost:3001/stats/track-history">
                             <button className={buttonStyle}>Last Played</button>
                         </a>
+                        <a href="http://localhost:3001/stats/playlists">
+                            <button className={buttonStyle}>~ Playlists ~</button>
+                        </a>
                     </div>
                 </div>
                 <div className="experience flex flex-col items-center justify-start px-[5rem] bg-[#181825] h-[60rem] pt-[18rem] mt-[-10rem] relative z-[2] rounded-b-[5rem]">
