@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * PlayHistoryResponse - models a response for the user's play history
+ */
 public class PlayHistoryResponse {
     private String name;
     private String artist;

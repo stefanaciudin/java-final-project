@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * PlaylistNameRepository - JPA repository for PlaylistName entity
+ */
 @Repository
 public interface PlaylistNameRepository extends JpaRepository<PlaylistName, Long> {
     List<PlaylistName> findAll();

@@ -21,6 +21,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * SpotifyController - handles requests to the Spotify API
+ */
+
 @RestController
 public class SpotifyController {
     @Autowired
@@ -44,6 +48,7 @@ public class SpotifyController {
 
     }
 
+    @CrossOrigin(origins = "http://localhost:3001")
     @GetMapping("/playlists")
     public List<PlaylistResponse> getPlaylists() {
         PlaylistSimplified[] playlists = spotifyService.getCurrentUsersPlaylists(accessToken);

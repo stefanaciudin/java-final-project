@@ -27,6 +27,10 @@ import java.util.*;
 
 import static demo.service.AuthService.spotifyApi;
 
+/**
+ * SpotifyService class - contains methods that make calls to the Spotify API
+ */
+
 @Service
 public class SpotifyService {
 
@@ -37,21 +41,31 @@ public class SpotifyService {
     TopSongRepository topSongRepository;
     String timeRange = "medium_term";
 
-    public PlaylistSimplified[] getCurrentUsersPlaylists(String code) {
+    public PlaylistSimplified[] getCurrentUsersPlaylists(String code) { // get the current user's playlists
         spotifyApi.setAccessToken(code);
-        Paging<PlaylistSimplified> playlists = null;
-        GetListOfCurrentUsersPlaylistsRequest getListOfCurrentUsersPlaylistsRequest = spotifyApi.getListOfCurrentUsersPlaylists().limit(50).offset(0).build();
+        List<PlaylistSimplified> allPlaylists = new ArrayList<>();
+        int offset = 0;
+        int limit = 50;
         try {
-            playlists = getListOfCurrentUsersPlaylistsRequest.execute();
-            System.out.println("Total: " + playlists.getTotal());
-            return playlists.getItems();
+            Paging<PlaylistSimplified> playlists;
+            do {
+                GetListOfCurrentUsersPlaylistsRequest getListOfCurrentUsersPlaylistsRequest = spotifyApi.getListOfCurrentUsersPlaylists()
+                        .limit(limit)
+                        .offset(offset)
+                        .build();
+                playlists = getListOfCurrentUsersPlaylistsRequest.execute();
+                PlaylistSimplified[] playlistItems = playlists.getItems();
+                allPlaylists.addAll(Arrays.asList(playlistItems));
+                offset += limit;
+            } while (playlists.getNext() != null);
         } catch (IOException | SpotifyWebApiException e) {
             System.out.println("Error: " + e.getMessage());
         }
-        return new PlaylistSimplified[0];
+        return allPlaylists.toArray(new PlaylistSimplified[0]);
     }
 
-    public Artist[] getFollowedArtists(String code) {
+
+    public Artist[] getFollowedArtists(String code) { // get the current user's followed artists
         ModelObjectType type = ModelObjectType.ARTIST;
         spotifyApi.setAccessToken(code);
         GetUsersFollowedArtistsRequest getUsersFollowedArtistsRequest = spotifyApi.getUsersFollowedArtists(type).limit(50).build();
@@ -64,12 +78,11 @@ public class SpotifyService {
                 artistPagingCursorbased = getUsersFollowedArtistsRequest.execute();
                 Artist[] artists = artistPagingCursorbased.getItems();
                 allFollowedArtists.addAll(Arrays.asList(artists));
-
-                // Check if there are more pages to fetch
+                // check if there are more pages to fetch
                 if (artistPagingCursorbased.getNext() != null) {
                     System.out.println("Next page: " + artistPagingCursorbased.getNext());
                     getUsersFollowedArtistsRequest = spotifyApi.getUsersFollowedArtists(type)
-                            .after(artistPagingCursorbased.getNext())
+                            .after(getCursorFromNextLink(artistPagingCursorbased.getNext()))
                             .build();
                 }
             } while (artistPagingCursorbased.getNext() != null);
@@ -80,8 +93,17 @@ public class SpotifyService {
         return allFollowedArtists.toArray(new Artist[0]);
     }
 
+    private String getCursorFromNextLink(String nextLink) {
+        // Extracts the cursor value from the nextLink
+        String[] parts = nextLink.split("after=");
+        if (parts.length > 1) {
+            return parts[1];
+        }
+        return null;
+    }
 
-    public Artist[] getUsersTopArtists(String code, String timeRange) {
+
+    public Artist[] getUsersTopArtists(String code, String timeRange) {// get the current user's top artists
         spotifyApi.setAccessToken(code);
         setTimeRange(timeRange);
         GetUsersTopArtistsRequest getUsersTopArtistsRequest = spotifyApi.getUsersTopArtists().limit(50).time_range(timeRange).build();
@@ -96,23 +118,20 @@ public class SpotifyService {
         return new Artist[0];
     }
 
-    public Artist[] getTopArtistsRelatedArtists(String code) {
-        // Get the top 10 artists
+    public Artist[] getTopArtistsRelatedArtists(String code) { // used to create a playlist of related artists
+        // get the top 10 artists
         Artist[] topArtists = getUsersTopArtists(code, timeRange);
-
-        // Define the number of related artists to fetch for each top artist
+        // for each artist, get their top 5 related artists
         int numberOfRelatedArtists = 5;
-
-        // Array to store the related artists
+        // array to store the related artists
         List<Artist> relatedArtists = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            // Get related artists for the current top artist
+            // get related artists for the current top artist
             GetArtistsRelatedArtistsRequest getArtistsRelatedArtistsRequest = spotifyApi.getArtistsRelatedArtists(topArtists[i].getId()).build();
-
             try {
                 final Artist[] artists = getArtistsRelatedArtistsRequest.execute();
-                // Limit the number of related artists to 5
+                // limit the number of related artists to 5
                 int numArtistsToAdd = Math.min(numberOfRelatedArtists, artists.length);
                 relatedArtists.addAll(Arrays.asList(artists).subList(0, numArtistsToAdd));
             } catch (IOException | SpotifyWebApiException e) {
@@ -125,7 +144,7 @@ public class SpotifyService {
     }
 
 
-    public PlayHistory[] getTrackHistory(String code) {
+    public PlayHistory[] getTrackHistory(String code) {// get the last 50 played tracks
         spotifyApi.setAccessToken(code);
         GetCurrentUsersRecentlyPlayedTracksRequest getUsersRecentlyPlayedTracksRequest = spotifyApi.getCurrentUsersRecentlyPlayedTracks().limit(50).build();
         try {
@@ -138,7 +157,7 @@ public class SpotifyService {
         return new PlayHistory[0];
     }
 
-    public Track[] getUsersTopTracks(String code, String timeRange) {
+    public Track[] getUsersTopTracks(String code, String timeRange) {// get the current user's top tracks
         spotifyApi.setAccessToken(code);
         setTimeRange(timeRange);
         GetUsersTopTracksRequest getUsersTopTracksRequest = spotifyApi.getUsersTopTracks().time_range(timeRange).limit(50).build();
@@ -149,12 +168,11 @@ public class SpotifyService {
         } catch (IOException | SpotifyWebApiException e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
-
         }
         return new Track[0];
     }
 
-    public Track[] getArtistsTopTracks(String artistId) {
+    public Track[] getArtistsTopTracks(String artistId) {// get an artist's top tracks
         GetArtistsTopTracksRequest getArtistsTopTracksRequest = spotifyApi.getArtistsTopTracks(artistId, CountryCode.US).build();
         try {
             final Track[] tracks = getArtistsTopTracksRequest.execute();
@@ -167,13 +185,13 @@ public class SpotifyService {
         return new Track[0];
     }
 
-    public Playlist createPlaylistWithTopTracks(String code) throws IOException, SpotifyWebApiException {
+    public Playlist createPlaylistWithTopTracks(String code) throws IOException, SpotifyWebApiException { // create a playlist with the user's top tracks
         spotifyApi.setAccessToken(code);
         Track[] topTracks = getUsersTopTracks(code, timeRange);
         return createNewPlaylist(topTracks);
     }
 
-    public Playlist createPlaylistFromRelatedArtists(String code) throws IOException, SpotifyWebApiException {
+    public Playlist createPlaylistFromRelatedArtists(String code) throws IOException, SpotifyWebApiException {// create a playlist with recommended tracks
         Artist[] relatedArtists = getTopArtistsRelatedArtists(code);
         Track[] relatedTracks = new Track[0];
         for (Artist artist : relatedArtists) {
@@ -190,7 +208,7 @@ public class SpotifyService {
     }
 
 
-    public List<Map.Entry<String, Integer>> getUsersTopGenres(String code, String timeRange) throws IOException, SpotifyWebApiException {
+    public List<Map.Entry<String, Integer>> getUsersTopGenres(String code, String timeRange) throws IOException, SpotifyWebApiException {// get the user's top genres
         Track[] topTracks = getUsersTopTracks(code, timeRange);
         setTimeRange(timeRange);
         Map<String, Integer> genreCounts = new HashMap<>();
@@ -207,7 +225,7 @@ public class SpotifyService {
     }
 
 
-    public Playlist createNewPlaylist(Track[] listOfTracks) throws IOException, SpotifyWebApiException {
+    public Playlist createNewPlaylist(Track[] listOfTracks) throws IOException, SpotifyWebApiException {// create a new playlist with the given tracks
         String randomPlaylistName = "New playlist"; // set a default name for the playlist
         // get a random playlist name from the database
         System.out.println(playlistNameRepository);
@@ -236,11 +254,10 @@ public class SpotifyService {
 
     }
 
-    public double compareTopSongs(String code, String timeRange) {
-        // get the user's top songs
+    public double compareTopSongs(String code, String timeRange) {// compare the user's top songs to the database
+        // get the user's top songs and fetch them from the database
         setTimeRange(timeRange);
         Track[] userTopSongs = getUsersTopTracks(code, timeRange);
-        // fetch the songs from the database
         List<TopSong> databaseSongs = topSongRepository.findAll();
         // calculate the number of matching songs
         int numMatches = 0;
@@ -252,12 +269,11 @@ public class SpotifyService {
                 }
             }
         }
-        System.out.println("Match %" + (double) numMatches / userTopSongs.length * 100.0);
         // calculate the percentage of matches
         return (double) numMatches / userTopSongs.length * 100.0;
     }
 
-    public String getUserId() {
+    public String getUserId() {// get the user's id
         GetCurrentUsersProfileRequest getCurrentUsersProfileRequest = spotifyApi.getCurrentUsersProfile().build();
         try {
             final User user = getCurrentUsersProfileRequest.execute();
@@ -269,7 +285,7 @@ public class SpotifyService {
         return null;
     }
 
-    public String retrieveAccessToken(String authorizationCode) throws IOException, SpotifyWebApiException {
+    public String retrieveAccessToken(String authorizationCode) throws IOException, SpotifyWebApiException {// method to retrieve the access token
         AuthorizationCodeRequest authorizationCodeRequest = spotifyApi.authorizationCode(authorizationCode).build();
         AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodeRequest.execute();
         return authorizationCodeCredentials.getAccessToken();

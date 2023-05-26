@@ -2,6 +2,9 @@ package demo.entity;
 
 import javax.persistence.*;
 
+/**
+ * PlaylistName - entity class for a playlist name
+ */
 @Table(name = "playlist_names")
 @Entity
 public class PlaylistName {

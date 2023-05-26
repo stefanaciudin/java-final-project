@@ -5,6 +5,9 @@ import com.wrapper.spotify.model_objects.specification.Artist;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ArtistResponse - models a response for artists
+ */
 public class ArtistResponse {
     private String name;
     private String[] genres;

@@ -6,6 +6,9 @@ import com.wrapper.spotify.model_objects.specification.Track;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * TrackResponse - models a response for tracks
+ */
 public class TrackResponse {
     private String name;
     private ArtistSimplified[] artists;

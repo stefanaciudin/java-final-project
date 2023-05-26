@@ -2,6 +2,9 @@ package demo.entity;
 
 import javax.persistence.*;
 
+/**
+ * TopSong - entity class for a top song
+ */
 @Entity
 @Table(name = "top_songs")
 public class TopSong {
